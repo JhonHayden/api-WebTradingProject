@@ -5,6 +5,10 @@
   "repository": "https://github.com/JhonHayden/api-web-trading-project.git",
   "author": "Jhon Hayden Ospina Loaiza <jhonhayden@hotmail.com>",
   "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
   "dependencies": {
     "express": "^4.17.1"
   }
