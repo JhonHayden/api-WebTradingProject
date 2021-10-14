@@ -1,9 +1,8 @@
 {
-  "name": "api-webtradingproject",
+  "name": "api-web-trading-project",
   "version": "1.0.0",
-  "description": "Nuestro primer proyecto Node",
   "main": "index.js",
-  "repository": "https://github.com/JhonHayden/api-WebTradingProject.git",
+  "repository": "https://github.com/JhonHayden/api-web-trading-project.git",
   "author": "Jhon Hayden Ospina Loaiza <jhonhayden@hotmail.com>",
   "license": "MIT",
   "dependencies": {
