@@ -4,6 +4,23 @@
 import Express from "express";// segunda forma de importar Express cuando ya lo habilite en el packege.json con 
 // type:module... esta es la nueva forma para node es igual como se hace en React .. esta forma es permitida 
 // gracias a babel 
+import { MongoClient } from "mongodb"; // importamos el gestor de mongoDB para conectarnos a la base de datos 
+
+
+//aqui va el string de conexion de mongoDB
+const stringConexion =
+    "mongodb+srv://jhonhayden:1430201380@proyectowebtradingproje.jvliq.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
+//BDmongo +  usuariodeConexion y contraseña+ la direccion de url de conexion a la base de datos.. me representa mis credenciales 
+// para acceder a la base de datos 
+// ojo debemos no subir esta contraseña al repositorio e github 
+const client = new MongoClient(stringConexion, { // instancia de mongo client le damos como argumentos el stringConexion y }
+    // un objet, esta instancia es la que me permite lq conexion a la base de datos 
+    useNewUrlParser: true,  // dos configuraciones necesarias recomendadas por mongo para trabajar  
+    useUnifiedTopology: true,
+});
+
+let conexionBaseDeDatos; // variable global que me tiene la conexion a mongoDB  esta variables es la conexion y usare para poder trabajar
+// con la base de datos
 
 
 // declaramos una variable que sera nuestra aplicacion nuestro servidor... app este nombre es por convencion 
@@ -29,49 +46,71 @@ app.get('/ventas', (req, res) => {// el primer argumento es la ruta y el segundo
     // informacion .. la funcion anonima tambien tiene paramentros y dos muy importantes son el 
     // req: es el request quien hace la solicitud o peticion estos nombres son por convencion 
     // res: es la respuesta del servidor a esta peticion, es la respuesta
-    // para el cliente el navegador el frontend estos nombres son por convencion 
+    // para el cliente, el navegador el frontend estos nombres son por convencion 
     console.log("alguien hizo get en la ruta /ventas");   //se imprime en la terminal cuando alguien visita la ruta
     // http://localhost:5000/ventas
 
-    const ventas = [  // simulacion de datos de la base de datos de mongoDB solo para pruebas
-        // despues esto se cambia por una instruccion de consulta a la base de datos 
-        {
-            codigoVenta: '123',
-            fecha: '14/10/2021',
-            codigoProducto: '254',
-            cantidadProducto: '2',
-            nombreVendedor: 'Jhon ',
-            nombreCliente: 'Stefania',
-            precioUnitario: '10000',
-            valorTotal: '20000'
-        },
-        {
-            codigoVenta: '254',
-            fecha: '14/10/2021',
-            codigoProducto: '254',
-            cantidadProducto: '2',
-            nombreVendedor: 'Jhon ',
-            nombreCliente: 'Stefania',
-            precioUnitario: '10000',
-            valorTotal: '20000'
-        },
-        {
-            codigoVenta: '123',
-            fecha: '14/10/2021',
-            codigoProducto: '254',
-            cantidadProducto: '2',
-            nombreVendedor: 'Jhon ',
-            nombreCliente: 'Stefania',
-            precioUnitario: '10000',
-            valorTotal: '20000'
-        }
-    ]
+    conexionBaseDeDatos.collection('venta').find({}).limit(50).toArray((errorDelMetodoFind,resultadoDelMetodoFind ) => { //funcion de la libreria mongodb del driver para la conexionBaseDeDatos (mongoclient) para encontrar
+        // un registro o hacer cualquier operacion de busqueda en la base de datos siempre y cuando se lo programemos en sus parametros 
+        // dentro de los parentesis de la funcion find() puedo colocar los parametros de busqueda si no necesito hacer busqueda especifica desde la base 
+        // de datos si no solo traer todos los registros le paso un objeto vacio {} , luego coloco el metodo si quiero de limit() que me 
+        // limita la cantidad de query .. de registros que devuelve  .. luego convierto toda la informacion en un arreglo de formato json para
+        // poder enviarlo al frontend y luego tiene como parametro una funcion que se ejecuta cuando termina la opercion del metodo find y me entrega 
+        // dos parametros un error de este proceso si existe o el resultado del proceso find 
+        // dentro del metodo find puedo colocar todos los filtros que quiera para tal consulta GET
+        //limit esta funcion es opcional y me permite segun el numero dentro del parentesis, el parametro .. me trae los primeros 50 registros 
+        // si hay mas de 50 en la base de datos para cada peticion get
+        if (errorDelMetodoFind){
 
-    res.send(ventas); // con el nombre del parametro de respuesta y el metodn 
+            res.status(400).send("Error consultando las ventas");//envia un mensaje como resultado (res = respuesta del servidor al ejecutar
+            // el metodo get) si existe un errorDelMetodoFind envia el status (400) de http y un mensaje Error consultando las venta al backend
+        }else {
+
+            res.json(resultadoDelMetodoFind); // res es la respuesta al ejecutar el metodo get entonces si el metodo find funciono y encontro los
+            // registros entonces devuelva como respuesta=res al front en formato json el resultadoDelMetodoFind que son los registros de la 
+            // base de datos
+        }
+        console.log(resultadoDelMetodoFind);
+    });
+    // const ventas = [  // simulacion de datos de la base de datos de mongoDB solo para pruebas
+    //     // despues esto se cambia por una instruccion de consulta a la base de datos 
+    //     {
+    //         codigoVenta: '123',
+    //         fecha: '14/10/2021',
+    //         codigoProducto: '254',
+    //         cantidadProducto: '2',
+    //         nombreVendedor: 'Jhon ',
+    //         nombreCliente: 'Stefania',
+    //         precioUnitario: '10000',
+    //         valorTotal: '20000'
+    //     },
+    //     {
+    //         codigoVenta: '254',
+    //         fecha: '14/10/2021',
+    //         codigoProducto: '254',
+    //         cantidadProducto: '2',
+    //         nombreVendedor: 'Jhon ',
+    //         nombreCliente: 'Stefania',
+    //         precioUnitario: '10000',
+    //         valorTotal: '20000'
+    //     },
+    //     {
+    //         codigoVenta: '123',
+    //         fecha: '14/10/2021',
+    //         codigoProducto: '254',
+    //         cantidadProducto: '2',
+    //         nombreVendedor: 'Jhon ',
+    //         nombreCliente: 'Stefania',
+    //         precioUnitario: '10000',
+    //         valorTotal: '20000'
+    //     }
+    // ]
+
+    // res.send(ventas); // con el nombre del parametro de respuesta y el metodn 
     // send le envio lo que quiera y necesite el navegador cliente el front dentro de los parentesis esta 
     // la respuesta se puede devolver html tambien dentro de la respuesta 
 
-})
+});
 
 
 // ruta para la peticion POST
@@ -79,35 +118,68 @@ app.post("/ventas/nueva", (req, res) => {
 
     // console.log(req); // req trae toda la trama de la data de la comuniciacion entre el front y el back con req.body 
     //estraemos la informacion de los datos como tal enviados 
-    // aqui implementaremos el codigo para crear venta en la base de datos de mongoDB
+
     const datosVentas = req.body;
 
-    console.log('llaves de los datos: ', Object.keys(datosVentas));// con la funcion Object.keys(datosVentas) estrae de los datos 
+    // console.log('llaves de los datos: ', Object.keys(datosVentas));// con la funcion Object.keys(datosVentas) estrae de los datos 
     // del json enviado por el front las llaves de estos datos 
     // express esta diseñado para trabajar con formato json pero se debe usar primero 
     // los metodos y utilidades .use para recibir json
-    if (Object.keys(datosVentas).includes('codigoVenta') &&
-        Object.keys(datosVentas).includes('fecha') &&
-        Object.keys(datosVentas).includes('codigoProducto') &&
-        Object.keys(datosVentas).includes('cantidadProducto') &&
-        Object.keys(datosVentas).includes('nombreVendedor') &&
-        Object.keys(datosVentas).includes('nombreCliente') &&
-        Object.keys(datosVentas).includes('precioUnitario') &&
-        Object.keys(datosVentas).includes('valorTotal')) {
 
-        res.sendStatus(200);
-        
-    } else {
-        
-        res.sendStatus(500);
+    try {
+
+        if (Object.keys(datosVentas).includes('codigoVenta') &&
+            Object.keys(datosVentas).includes('fecha') &&
+            Object.keys(datosVentas).includes('codigoProducto') &&
+            Object.keys(datosVentas).includes('cantidadProducto') &&
+            Object.keys(datosVentas).includes('nombreVendedor') &&
+            Object.keys(datosVentas).includes('nombreCliente') &&
+            Object.keys(datosVentas).includes('precioUnitario') &&
+            Object.keys(datosVentas).includes('valorTotal')) {
+
+            // aqui implementaremos el codigo para crear venta en la base de datos de mongoDB
+            conexionBaseDeDatos.collection('venta').insertOne(datosVentas, (errorCrearRegistro, resultadoCrearRegistro) => { // usamos funciones de mongo para escribir y guardar en una
+                // colecion documento creado con conexionBaseDeDatos.collection("venta"), venta es mi colecion y en ella guardo los datos traidos del front, el 
+                // registro de una venta con el metodo inserOne, el segundo parametro de es una funcion que se ejecuta cuando la insercion es decir
+                // el proceso de guardar el registro en la base de datos termine esta funcion tiene dos parametros uno es un error y esto es para mostrar
+                // un mensaje de error si la operacion inserOne no fue satisfactoria y resul me trae el resultado creo 
+                if (errorCrearRegistro) {
+
+                    console.error(errorCrearRegistro);
+                    res.sendStatus(500);
+
+                } else {
+                    console.log(res);
+                    console.log(resultadoCrearRegistro);
+                    res.sendStatus(200); // estado de peticion http de todo bien todo bien  (estados de las peticiones HTTP sirven
+                    // para tener un buen control de manejo de error )
+                }
+
+            });// este es mi documento en la base de datos dentro de mi collecion
+            //  (documentosenBaseDatos)--> conexionBaseDeDatos = db.db('documentosenBaseDatos') donde guardare mis datos de las
+            // ventas es decir representa el modelo o entidad ventas, y le insertare los datos a ese documento con 
+            // el metodo insertOne, el primer parametro es mi registro de una venta y el  segundo parametro es una funcion que tiene 
+            // dos parametros err= error si sucede un error , y result = aun nose que es pero es el resultado de esta operacion insert 
+
+            res.sendStatus(200); // estado de peticion http de todo bien todo bien  (estados de las peticiones HTTP sirven
+            // para tener un buen control de manejo de error )
+
+        } else {
+
+            res.sendStatus(500);
+        }
     }
-    console.log("venta a crear", req.body);// con req.body accedo a la informacion enviada por el front ya convertida
+    catch {
+
+        res.sendStatus(500);// estado de peticion http de falla
+    }
+    // console.log("venta a crear", req.body);// con req.body accedo a la informacion enviada por el front ya convertida
     // res.send("ok venta creada con exito");
     // en un objeto con la funcion Express.json().. body es el cuerpo toda la informacion enviada desde el front 
     // body es una palabra reservada.. req.body es mi la informacion enviada desde el frontend
     // el parametro req es la peticion del cliente el frontend es el request==req
 
-    console.log("esto es una peticion a de tipo POST a la ruta ") // no saldra nada por que siempre las peticiones de navegcaion 
+    // console.log("esto es una peticion a de tipo POST a la ruta ") // no saldra nada por que siempre las peticiones de navegcaion 
     // a las url son de tipo GET, las solicitudes que se hacen atraves de un navegador son siempre de tipo GET para 
     // probar las peticiones de los otros tipos diferentes a las get se necesita de las herramientas tecnologicas como 
     // postman e  insomnia me ayudaran a probar estas peticiones que no son get
@@ -115,19 +187,49 @@ app.post("/ventas/nueva", (req, res) => {
 });
 
 
-// lo primero que se le agrega o habilita es prender el servidor es ponerlo a escuchar, se prenda y comience 
-//a escuchar las peticiones que llegaran a un puerto especifico 
-app.listen(5000, () => {// me permite prender y correr el servidor se queda todo el tiempo en ejecucion y escuchando solicitudes 
-    // en el puerto especifico en este servidor donde estara desplegado el puerto se pone como argumento 
-    // en los parentesis del metodo listen() por convencion es el puerto 5000 o 5050 la idea es que sea unico 
-    // el segundo argumento es una funcion que se ejecuta cuando la app comienza a funcionar cuando se inicia 
-    // a escuchar el puerto 
+// necesitamos antes de prender el servidor con listen .. conectarnos a la base de datos por esto definimos una funcion 
+// main que nos permita hacer esto, este main se ejecutara todo el tiempo y primero se conecta a la base de datos y
+// luego ejecuta y prende el servidor con listen 
+// main es la funcion para conectarme a la base de datos y permitir la comunicacion y transferencia de datos 
 
-    console.log("escuchando puerto 5000")
+const main = () => { // esta funcion se ejecutara primero y me permite hacer la conexion primero a la base de datos
+    // y ya luego si prender el servidor al retornar el metodo listen
 
-})
+    // aqui hacemos la conexion a la base de datos 
+    client.connect((err, db) => { // metodo de MongoClient connect me permite conectarme a la base de datos
+        //  y tiene dos parametros err= error de conexion si sale 
+        // un error y db = mi base de datos mongo que estoy trabajando en el proyecto . db = es la coleccion de coleccion de mi base de datos es la 
+        // base de datos en si, cada coleccion es una entidad (venta, usuario , prpducto)
+        if (err) {
+            console.error("Error conectando a la base de datos ")
+            // return false; 
+        }
+        // la siguiente variable es la conexionBaseDeDatos a la base de datos y necesito acceder a ellas desde todas las partes donde 
+        // necesite trabajar con mi base de datos 
+        conexionBaseDeDatos= db.db('WebTradingProjectBD') //esta variable debo hacerla global para acceder a ella desde otras 
+        // partes.. el metodo db, me conecta a la coleccion en mi base de datos .. conexionBaseDeDatos = db.db('documentosenBaseDatos') me crea la 
+        // coleccion de documentos, colecion de coleciones, cada documento es una colecion de registros de objetos cada colecion me representa
+        // una entidad que guardare instacias de esta entidad.. entonces esta en otras palabras es la base de datos. con la funcion db('baseDeDatos')
+        // creo la base de datos en mongo
+        // si funciona la conexionBaseDeDatos = db.db retorno  el encendido al servidor
+        
+        // console.log("conexion exitosa a la base de datos", conexionBaseDeDatos)
+        console.log("conexion exitosa a la base de datos")
+        // lo primero que se le agrega o habilita es prender el servidor es ponerlo a escuchar, se prenda y comience 
+        //a escuchar las peticiones que llegaran a un puerto especifico
+        return app.listen(5000, () => {//por dentro de este metodo listen tiene un while true para estar ejecutandoce siempre 
+            //  me permite prender y correr el servidor se queda todo el tiempo en ejecucion y escuchando solicitudes 
+            // en el puerto especifico en este servidor donde estara desplegado el puerto se pone como argumento 
+            // en los parentesis del metodo listen() por convencion es el puerto 5000 o 5050 la idea es que sea unico 
+            // el segundo argumento es una funcion que se ejecuta cuando la app comienza a funcionar cuando se inicia 
+            // a escuchar el puerto 
 
+            console.log("escuchando puerto 5000")
+        });
+    })
 
+};
 
+main(); //llamado a la funcion main para que se ejecute 
 
 
