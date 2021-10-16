@@ -4,8 +4,13 @@
 import Express from "express";// segunda forma de importar Express cuando ya lo habilite en el packege.json con 
 // type:module... esta es la nueva forma para node es igual como se hace en React .. esta forma es permitida 
 // gracias a babel 
-import { MongoClient } from "mongodb"; // importamos el gestor de mongoDB para conectarnos a la base de datos 
+import { MongoClient, ObjectId } from "mongodb"; // importamos el gestor de mongoDB para conectarnos a la base de datos como 
+// tambien la funcion de ObjectId para obtener el id de un registro y poder hacer el metodo PATCH 
 
+// importamos el paquete cors para permitir compartir recursos con origenes diferentes
+// const cors= require('cors'); // forma tradicional de importar un package ya no lo puedo importar asi de esta forma 
+// por que le cambie la forma de importar package
+import Cors from "cors";
 
 //aqui va el string de conexion de mongoDB
 const stringConexion =
@@ -27,10 +32,11 @@ let conexionBaseDeDatos; // variable global que me tiene la conexion a mongoDB  
 // esta variable le agregamos todo lo que se necesite las rutas los metodos 
 const app = Express();
 
+
 app.use(Express.json()) // cuando llega una solicitud primero se ejecuta esta funcion use y me permite trabajar con formato json en mis peticiones, nos habilita para 
 // cuando nos llega una solicitud y peticion de tipo json en un request del frontend, el Express.json() la funcion .json()
 //  convierte el cuerpo body de esa peticion o request del front en  un objeto que se puede usar en nuestro backend
-
+app.use(Cors()); // asi uso el package cors y permite usarlo 
 
 
 
@@ -50,7 +56,7 @@ app.get('/ventas', (req, res) => {// el primer argumento es la ruta y el segundo
     console.log("alguien hizo get en la ruta /ventas");   //se imprime en la terminal cuando alguien visita la ruta
     // http://localhost:5000/ventas
 
-    conexionBaseDeDatos.collection('venta').find({}).limit(50).toArray((errorDelMetodoFind,resultadoDelMetodoFind ) => { //funcion de la libreria mongodb del driver para la conexionBaseDeDatos (mongoclient) para encontrar
+    conexionBaseDeDatos.collection('venta').find({}).limit(50).toArray((errorDelMetodoFind, resultadoDelMetodoFind) => { //funcion de la libreria mongodb del driver para la conexionBaseDeDatos (mongoclient) para encontrar
         // un registro o hacer cualquier operacion de busqueda en la base de datos siempre y cuando se lo programemos en sus parametros 
         // dentro de los parentesis de la funcion find() puedo colocar los parametros de busqueda si no necesito hacer busqueda especifica desde la base 
         // de datos si no solo traer todos los registros le paso un objeto vacio {} , luego coloco el metodo si quiero de limit() que me 
@@ -60,11 +66,11 @@ app.get('/ventas', (req, res) => {// el primer argumento es la ruta y el segundo
         // dentro del metodo find puedo colocar todos los filtros que quiera para tal consulta GET
         //limit esta funcion es opcional y me permite segun el numero dentro del parentesis, el parametro .. me trae los primeros 50 registros 
         // si hay mas de 50 en la base de datos para cada peticion get
-        if (errorDelMetodoFind){
+        if (errorDelMetodoFind) {
 
             res.status(400).send("Error consultando las ventas");//envia un mensaje como resultado (res = respuesta del servidor al ejecutar
             // el metodo get) si existe un errorDelMetodoFind envia el status (400) de http y un mensaje Error consultando las venta al backend
-        }else {
+        } else {
 
             res.json(resultadoDelMetodoFind); // res es la respuesta al ejecutar el metodo get entonces si el metodo find funciono y encontro los
             // registros entonces devuelva como respuesta=res al front en formato json el resultadoDelMetodoFind que son los registros de la 
@@ -135,7 +141,9 @@ app.post("/ventas/nueva", (req, res) => {
             Object.keys(datosVentas).includes('nombreVendedor') &&
             Object.keys(datosVentas).includes('nombreCliente') &&
             Object.keys(datosVentas).includes('precioUnitario') &&
-            Object.keys(datosVentas).includes('valorTotal')) {
+            Object.keys(datosVentas).includes('valorTotal')
+            
+            ) {
 
             // aqui implementaremos el codigo para crear venta en la base de datos de mongoDB
             conexionBaseDeDatos.collection('venta').insertOne(datosVentas, (errorCrearRegistro, resultadoCrearRegistro) => { // usamos funciones de mongo para escribir y guardar en una
@@ -161,7 +169,8 @@ app.post("/ventas/nueva", (req, res) => {
             // el metodo insertOne, el primer parametro es mi registro de una venta y el  segundo parametro es una funcion que tiene 
             // dos parametros err= error si sucede un error , y result = aun nose que es pero es el resultado de esta operacion insert 
 
-            res.sendStatus(200); // estado de peticion http de todo bien todo bien  (estados de las peticiones HTTP sirven
+            // res.sendStatus(200);//esta linea me presenta error si la meto (Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client)  
+             // estado de peticion http de todo bien todo bien  (estados de las peticiones HTTP sirven
             // para tener un buen control de manejo de error )
 
         } else {
@@ -186,6 +195,42 @@ app.post("/ventas/nueva", (req, res) => {
 
 });
 
+app.patch("/ventas/editar", (req, res) => { // implementamos la ruta para la peticion de actualizar
+
+    const edicion = req.body;// almaceno el cuerpo el objeto json, en formato json de mis datos 
+    console.log(edicion);
+    const filtroIdAActualizar = { _id: new ObjectId(edicion.id) } //hace el filtro sobre el id a buscar y asi encontrar el registro 
+    // para aplicarle las modificaciones, este es el primer parametro que necesita el metodo .findOneAndUpdate( ) sontres 
+    // los parametros que necesita para buscar el registro luego poder modificarlo 
+    delete edicion.id; // debo eliminar el id del cuerpo de los datos del json porque si no me crea y duplica este
+    // id en el registro que estoy modificando y me lo crea en la ultima linen del registro esto se hace cuando estoy 
+    // editando por medio de obtener el id del regristro si fuera edicion por rutas URL no necesito esto 
+    const operacionAtomica = { // instruccion atomic operators me configura a la base de datos para editar 
+        $set:edicion // le mando todo el cuerpo del registro a editar 
+    };
+    conexionBaseDeDatos
+        .collection("venta") // en que coleccion voy hacer la operacion de actualizar
+        .findOneAndUpdate(filtroIdAActualizar, operacionAtomica, { upsert: true,returnOriginal:true },
+            (errorOperacionPATCH, resultaOperacionPATCH) => {
+                if (errorOperacionPATCH){
+                    console.error("Error actualizando la venta",errorOperacionPATCH);
+                    res.sendStatus(500);
+                }else {
+                    console.log('Actualizado con exito');
+                    res.sendStatus(200);
+                }
+
+            }) // .findOneAndUpdate --> esta funcion recibe tres parametros uno es 
+    // el filtro para el saber cual es el registro a modificar el segundo parametro es que se va a modificar y en este cso 
+    // queremos poder modifcar cualquier campo del registro por eso se pasa todo el cuerpo de la request que es todo 
+    // el objeto en formato json de los datos del formulario con los cambios hechos, el tercer parametro son opciones 
+    // como el upsert = me permite hacer algo cuando no encuentra el id y Crea un nuevo documento si ningún documento coincide con el filter. 
+    // returnOriginal= me retorna el dato original para poder comparar y bueno hay mas opciones para configurar y depende 
+    // del caso de uso
+    // y por ultimo parametro el colbart la funcion que se ejecuta cuando la operacion PATCH fue realizada
+
+});   
+
 
 // necesitamos antes de prender el servidor con listen .. conectarnos a la base de datos por esto definimos una funcion 
 // main que nos permita hacer esto, este main se ejecutara todo el tiempo y primero se conecta a la base de datos y
@@ -206,13 +251,13 @@ const main = () => { // esta funcion se ejecutara primero y me permite hacer la 
         }
         // la siguiente variable es la conexionBaseDeDatos a la base de datos y necesito acceder a ellas desde todas las partes donde 
         // necesite trabajar con mi base de datos 
-        conexionBaseDeDatos= db.db('WebTradingProjectBD') //esta variable debo hacerla global para acceder a ella desde otras 
+        conexionBaseDeDatos = db.db('WebTradingProjectBD') //esta variable debo hacerla global para acceder a ella desde otras 
         // partes.. el metodo db, me conecta a la coleccion en mi base de datos .. conexionBaseDeDatos = db.db('documentosenBaseDatos') me crea la 
         // coleccion de documentos, colecion de coleciones, cada documento es una colecion de registros de objetos cada colecion me representa
         // una entidad que guardare instacias de esta entidad.. entonces esta en otras palabras es la base de datos. con la funcion db('baseDeDatos')
         // creo la base de datos en mongo
         // si funciona la conexionBaseDeDatos = db.db retorno  el encendido al servidor
-        
+
         // console.log("conexion exitosa a la base de datos", conexionBaseDeDatos)
         console.log("conexion exitosa a la base de datos")
         // lo primero que se le agrega o habilita es prender el servidor es ponerlo a escuchar, se prenda y comience 
