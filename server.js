@@ -12,9 +12,15 @@ import { MongoClient, ObjectId } from "mongodb"; // importamos el gestor de mong
 // por que le cambie la forma de importar package
 import Cors from "cors";
 
-//aqui va el string de conexion de mongoDB
-const stringConexion =
-    "mongodb+srv://jhonhayden:1430201380@proyectowebtradingproje.jvliq.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
+
+import dotenv from "dotenv"; // variables de entorno 
+
+dotenv.config({path:'./.env'} );// configuracion de la libreria dotenv para poder usar la variables de entorno del archivo .env.. le paso un objeto 
+// al metodo config de dotenv con la ruta del archivo .env
+
+const stringConexion= process.env.DATABASE_URL; // me permite traer la url (DATABASE_URL) de conexion desde el archivo .env
+// y lo asigna a la variables stringConexion 
+
 //BDmongo +  usuariodeConexion y contraseña+ la direccion de url de conexion a la base de datos.. me representa mis credenciales 
 // para acceder a la base de datos 
 // ojo debemos no subir esta contraseña al repositorio e github 
@@ -142,8 +148,8 @@ app.post("/ventas/nueva", (req, res) => {
             Object.keys(datosVentas).includes('nombreCliente') &&
             Object.keys(datosVentas).includes('precioUnitario') &&
             Object.keys(datosVentas).includes('valorTotal')
-            
-            ) {
+
+        ) {
 
             // aqui implementaremos el codigo para crear venta en la base de datos de mongoDB
             conexionBaseDeDatos.collection('venta').insertOne(datosVentas, (errorCrearRegistro, resultadoCrearRegistro) => { // usamos funciones de mongo para escribir y guardar en una
@@ -170,7 +176,7 @@ app.post("/ventas/nueva", (req, res) => {
             // dos parametros err= error si sucede un error , y result = aun nose que es pero es el resultado de esta operacion insert 
 
             // res.sendStatus(200);//esta linea me presenta error si la meto (Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client)  
-             // estado de peticion http de todo bien todo bien  (estados de las peticiones HTTP sirven
+            // estado de peticion http de todo bien todo bien  (estados de las peticiones HTTP sirven
             // para tener un buen control de manejo de error )
 
         } else {
@@ -200,22 +206,22 @@ app.patch("/ventas/editar", (req, res) => { // implementamos la ruta para la pet
     const edicion = req.body;// almaceno el cuerpo el objeto json, en formato json de mis datos 
     console.log(edicion);
     const filtroIdAActualizar = { _id: new ObjectId(edicion.id) } //hace el filtro sobre el id a buscar y asi encontrar el registro 
-    // para aplicarle las modificaciones, este es el primer parametro que necesita el metodo .findOneAndUpdate( ) sontres 
+    // para aplicarle las modificaciones, este es el primer parametro que necesita el metodo .findOneAndUpdate( ) son tres 
     // los parametros que necesita para buscar el registro luego poder modificarlo 
     delete edicion.id; // debo eliminar el id del cuerpo de los datos del json porque si no me crea y duplica este
     // id en el registro que estoy modificando y me lo crea en la ultima linen del registro esto se hace cuando estoy 
     // editando por medio de obtener el id del regristro si fuera edicion por rutas URL no necesito esto 
-    const operacionAtomica = { // instruccion atomic operators me configura a la base de datos para editar 
-        $set:edicion // le mando todo el cuerpo del registro a editar 
+    const operacionAtomica = { // instruccion atomic operators, me configura a la base de datos para editar 
+        $set: edicion // le mando todo el cuerpo del registro a editar 
     };
     conexionBaseDeDatos
         .collection("venta") // en que coleccion voy hacer la operacion de actualizar
-        .findOneAndUpdate(filtroIdAActualizar, operacionAtomica, { upsert: true,returnOriginal:true },
+        .findOneAndUpdate(filtroIdAActualizar, operacionAtomica, { upsert: true, returnOriginal: true },
             (errorOperacionPATCH, resultaOperacionPATCH) => {
-                if (errorOperacionPATCH){
-                    console.error("Error actualizando la venta",errorOperacionPATCH);
+                if (errorOperacionPATCH) {
+                    console.error("Error actualizando la venta", errorOperacionPATCH);
                     res.sendStatus(500);
-                }else {
+                } else {
                     console.log('Actualizado con exito');
                     res.sendStatus(200);
                 }
@@ -229,9 +235,30 @@ app.patch("/ventas/editar", (req, res) => { // implementamos la ruta para la pet
     // del caso de uso
     // y por ultimo parametro el colbart la funcion que se ejecuta cuando la operacion PATCH fue realizada
 
-});   
+});
 
+app.delete("/ventas/eliminar", (req, res) => {
+    const cuerpoRegistroAEliminar = req.body;//  guardo el cuerpo de la informacion es decir el json donde esta todos los datos 
+    // de los campos del registro de la venta a eliminar 
+    const filtroIdAEliminar = { _id: new ObjectId(cuerpoRegistroAEliminar.id) } //hace el filtro sobre el id a buscar y asi encontrar el registro 
+    // para poder eliminarlo , este es el primer parametro que necesita el metodo .findOneAndUpdate( ) son tres 
+    // los parametros que necesita para buscar el registro luego poder modificarlo 
 
+    conexionBaseDeDatos.collection('venta').deleteOne(filtroIdAEliminar, (errMetodoEliminar, resultMetodoEliminar) => {
+
+        console.log(resultMetodoEliminar);
+        if (errMetodoEliminar) {
+
+            console.error(errMetodoEliminar);
+            res.sendStatus(500); // res es la respuesta del servidor enviada al cliente frontend cuando se ejecuta este metodo 
+            // delete
+        } else {
+
+            res.sendStatus(200);
+        }
+
+    });
+}); 
 // necesitamos antes de prender el servidor con listen .. conectarnos a la base de datos por esto definimos una funcion 
 // main que nos permita hacer esto, este main se ejecutara todo el tiempo y primero se conecta a la base de datos y
 // luego ejecuta y prende el servidor con listen 
