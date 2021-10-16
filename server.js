@@ -4,7 +4,7 @@
 import Express from "express";// segunda forma de importar Express cuando ya lo habilite en el packege.json con 
 // type:module... esta es la nueva forma para node es igual como se hace en React .. esta forma es permitida 
 // gracias a babel 
-import { MongoClient, ObjectId } from "mongodb"; // importamos el gestor de mongoDB para conectarnos a la base de datos como 
+import { ObjectId } from "mongodb"; // importamos el gestor de mongoDB para conectarnos a la base de datos como 
 // tambien la funcion de ObjectId para obtener el id de un registro y poder hacer el metodo PATCH 
 
 // importamos el paquete cors para permitir compartir recursos con origenes diferentes
@@ -12,26 +12,13 @@ import { MongoClient, ObjectId } from "mongodb"; // importamos el gestor de mong
 // por que le cambie la forma de importar package
 import Cors from "cors";
 
+import { conectarBD, getBD } from "./db/db.js"; // importo la funcion para la conexion a la base de datos mongoDB
+
 
 import dotenv from "dotenv"; // variables de entorno 
 
 dotenv.config({path:'./.env'} );// configuracion de la libreria dotenv para poder usar la variables de entorno del archivo .env.. le paso un objeto 
 // al metodo config de dotenv con la ruta del archivo .env
-
-const stringConexion= process.env.DATABASE_URL; // me permite traer la url (DATABASE_URL) de conexion desde el archivo .env
-// y lo asigna a la variables stringConexion 
-
-//BDmongo +  usuariodeConexion y contraseña+ la direccion de url de conexion a la base de datos.. me representa mis credenciales 
-// para acceder a la base de datos 
-// ojo debemos no subir esta contraseña al repositorio e github 
-const client = new MongoClient(stringConexion, { // instancia de mongo client le damos como argumentos el stringConexion y }
-    // un objet, esta instancia es la que me permite lq conexion a la base de datos 
-    useNewUrlParser: true,  // dos configuraciones necesarias recomendadas por mongo para trabajar  
-    useUnifiedTopology: true,
-});
-
-let conexionBaseDeDatos; // variable global que me tiene la conexion a mongoDB  esta variables es la conexion y usare para poder trabajar
-// con la base de datos
 
 
 // declaramos una variable que sera nuestra aplicacion nuestro servidor... app este nombre es por convencion 
@@ -62,7 +49,7 @@ app.get('/ventas', (req, res) => {// el primer argumento es la ruta y el segundo
     console.log("alguien hizo get en la ruta /ventas");   //se imprime en la terminal cuando alguien visita la ruta
     // http://localhost:5000/ventas
 
-    conexionBaseDeDatos.collection('venta').find({}).limit(50).toArray((errorDelMetodoFind, resultadoDelMetodoFind) => { //funcion de la libreria mongodb del driver para la conexionBaseDeDatos (mongoclient) para encontrar
+    getBD().collection('venta').find({}).limit(50).toArray((errorDelMetodoFind, resultadoDelMetodoFind) => { //funcion de la libreria mongodb del driver para la getBD() (mongoclient) para encontrar
         // un registro o hacer cualquier operacion de busqueda en la base de datos siempre y cuando se lo programemos en sus parametros 
         // dentro de los parentesis de la funcion find() puedo colocar los parametros de busqueda si no necesito hacer busqueda especifica desde la base 
         // de datos si no solo traer todos los registros le paso un objeto vacio {} , luego coloco el metodo si quiero de limit() que me 
@@ -152,8 +139,8 @@ app.post("/ventas/nueva", (req, res) => {
         ) {
 
             // aqui implementaremos el codigo para crear venta en la base de datos de mongoDB
-            conexionBaseDeDatos.collection('venta').insertOne(datosVentas, (errorCrearRegistro, resultadoCrearRegistro) => { // usamos funciones de mongo para escribir y guardar en una
-                // colecion documento creado con conexionBaseDeDatos.collection("venta"), venta es mi colecion y en ella guardo los datos traidos del front, el 
+            getBD().collection('venta').insertOne(datosVentas, (errorCrearRegistro, resultadoCrearRegistro) => { // usamos funciones de mongo para escribir y guardar en una
+                // colecion documento creado con getBD().collection("venta"), venta es mi colecion y en ella guardo los datos traidos del front, el 
                 // registro de una venta con el metodo inserOne, el segundo parametro de es una funcion que se ejecuta cuando la insercion es decir
                 // el proceso de guardar el registro en la base de datos termine esta funcion tiene dos parametros uno es un error y esto es para mostrar
                 // un mensaje de error si la operacion inserOne no fue satisfactoria y resul me trae el resultado creo 
@@ -170,7 +157,7 @@ app.post("/ventas/nueva", (req, res) => {
                 }
 
             });// este es mi documento en la base de datos dentro de mi collecion
-            //  (documentosenBaseDatos)--> conexionBaseDeDatos = db.db('documentosenBaseDatos') donde guardare mis datos de las
+            //  (documentosenBaseDatos)--> getBD() = db.db('documentosenBaseDatos') donde guardare mis datos de las
             // ventas es decir representa el modelo o entidad ventas, y le insertare los datos a ese documento con 
             // el metodo insertOne, el primer parametro es mi registro de una venta y el  segundo parametro es una funcion que tiene 
             // dos parametros err= error si sucede un error , y result = aun nose que es pero es el resultado de esta operacion insert 
@@ -214,7 +201,7 @@ app.patch("/ventas/editar", (req, res) => { // implementamos la ruta para la pet
     const operacionAtomica = { // instruccion atomic operators, me configura a la base de datos para editar 
         $set: edicion // le mando todo el cuerpo del registro a editar 
     };
-    conexionBaseDeDatos
+    getBD()
         .collection("venta") // en que coleccion voy hacer la operacion de actualizar
         .findOneAndUpdate(filtroIdAActualizar, operacionAtomica, { upsert: true, returnOriginal: true },
             (errorOperacionPATCH, resultaOperacionPATCH) => {
@@ -244,7 +231,7 @@ app.delete("/ventas/eliminar", (req, res) => {
     // para poder eliminarlo , este es el primer parametro que necesita el metodo .findOneAndUpdate( ) son tres 
     // los parametros que necesita para buscar el registro luego poder modificarlo 
 
-    conexionBaseDeDatos.collection('venta').deleteOne(filtroIdAEliminar, (errMetodoEliminar, resultMetodoEliminar) => {
+    getBD().collection('venta').deleteOne(filtroIdAEliminar, (errMetodoEliminar, resultMetodoEliminar) => {
 
         console.log(resultMetodoEliminar);
         if (errMetodoEliminar) {
@@ -268,40 +255,21 @@ const main = () => { // esta funcion se ejecutara primero y me permite hacer la 
     // y ya luego si prender el servidor al retornar el metodo listen
 
     // aqui hacemos la conexion a la base de datos 
-    client.connect((err, db) => { // metodo de MongoClient connect me permite conectarme a la base de datos
-        //  y tiene dos parametros err= error de conexion si sale 
-        // un error y db = mi base de datos mongo que estoy trabajando en el proyecto . db = es la coleccion de coleccion de mi base de datos es la 
-        // base de datos en si, cada coleccion es una entidad (venta, usuario , prpducto)
-        if (err) {
-            console.error("Error conectando a la base de datos ")
-            // return false; 
-        }
-        // la siguiente variable es la conexionBaseDeDatos a la base de datos y necesito acceder a ellas desde todas las partes donde 
-        // necesite trabajar con mi base de datos 
-        conexionBaseDeDatos = db.db('WebTradingProjectBD') //esta variable debo hacerla global para acceder a ella desde otras 
-        // partes.. el metodo db, me conecta a la coleccion en mi base de datos .. conexionBaseDeDatos = db.db('documentosenBaseDatos') me crea la 
-        // coleccion de documentos, colecion de coleciones, cada documento es una colecion de registros de objetos cada colecion me representa
-        // una entidad que guardare instacias de esta entidad.. entonces esta en otras palabras es la base de datos. con la funcion db('baseDeDatos')
-        // creo la base de datos en mongo
-        // si funciona la conexionBaseDeDatos = db.db retorno  el encendido al servidor
+   
+    return app.listen(process.env.PORT, () => {//por dentro de este metodo listen tiene un while true para estar ejecutandoce siempre 
+        //  me permite prender y correr el servidor se queda todo el tiempo en ejecucion y escuchando solicitudes 
+        // en el puerto especifico en este servidor donde estara desplegado el puerto se pone como argumento 
+        // en los parentesis del metodo listen() por convencion es el puerto 5000 o 5050 la idea es que sea unico 
+        // el segundo argumento es una funcion que se ejecuta cuando la app comienza a funcionar cuando se inicia 
+        // a escuchar el puerto 
 
-        // console.log("conexion exitosa a la base de datos", conexionBaseDeDatos)
-        console.log("conexion exitosa a la base de datos")
-        // lo primero que se le agrega o habilita es prender el servidor es ponerlo a escuchar, se prenda y comience 
-        //a escuchar las peticiones que llegaran a un puerto especifico
-        return app.listen(5000, () => {//por dentro de este metodo listen tiene un while true para estar ejecutandoce siempre 
-            //  me permite prender y correr el servidor se queda todo el tiempo en ejecucion y escuchando solicitudes 
-            // en el puerto especifico en este servidor donde estara desplegado el puerto se pone como argumento 
-            // en los parentesis del metodo listen() por convencion es el puerto 5000 o 5050 la idea es que sea unico 
-            // el segundo argumento es una funcion que se ejecuta cuando la app comienza a funcionar cuando se inicia 
-            // a escuchar el puerto 
-
-            console.log("escuchando puerto 5000")
-        });
-    })
-
+        console.log( `escuchando puerto ${process.env.PORT}`) // uso de variable de entorno con process.env.POR 
+    });
 };
 
-main(); //llamado a la funcion main para que se ejecute 
+// main(); //llamado a la funcion main para que se ejecute 
 
 
+conectarBD(main);//llamamos la funcion de conectar a la base de datos y le pasamos como parametro la funcion main 
+// y esta funcion main se ejecutara como callback despues de que se ejecute las intrucciones de la funcion conectarBD
+// se ejecutara main 
