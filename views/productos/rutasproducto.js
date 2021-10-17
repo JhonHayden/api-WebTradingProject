@@ -11,7 +11,7 @@ const genericCallback = (res) => (err, result) => {
     // estructura de funciones anidadas 2 forma de escribirla
     if (err) {
 
-        res.status(400).send("Error consultando los productos");//envia un mensaje como resultado (res = respuesta del servidor al ejecutar
+        res.status(500).json({ error: err });//envia un mensaje como resultado (res = respuesta del servidor al ejecutar
         // el metodo get) si existe un err envia el status (400) de http y un mensaje Error consultando las venta al backend
     } else {
 
