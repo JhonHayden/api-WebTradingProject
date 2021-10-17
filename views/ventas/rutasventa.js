@@ -76,13 +76,16 @@ rutasVenta.route('/ventas').post((req, res) => {
 // esto con el proposito de encontrar el registro a modificar por medio de la ruta y no por medio del id del cuerpo de los datos traidos del front 
 rutasVenta.route("/ventas/:id").patch((req, res) => { // implementamos la ruta para la peticion de actualizar
 
-    editarVenta(req.body, genericCallback(res)); // 
+    editarVenta(req.params.id, req.body, genericCallback(res)); //se usa req.params.id cuando lo que queremos es acceder 
+    // al id del registro desde la ruta y se usa req.body si vamos a obtener el id por medio del cuerpo del registro enviado
+    // es decir los datos en si 
 
 });
 
 // ruta para la peticion DELETE
 rutasVenta.route("/ventas/:id").delete((req, res) => {
-    eliminarVenta(req.body, genericCallback(res));
+    // console.log("elimine")
+    eliminarVenta(req.params.id, genericCallback(res));
 });
 
 export default rutasVenta;// lo exportamos para usarlo en mi server.js con los metodo app.use(rutasVenta)

@@ -79,14 +79,14 @@ const crearVenta = async (datosNuevaVenta, callback) => { // se pone async para 
 
 };
 
-const editarVenta = async (ventaAEditar, callback) => {
+const editarVenta = async (id, ventaAEditar, callback) => { // 
 
     // const edicion = req.body;// almaceno el cuerpo el objeto json, en formato json de mis datos 
     // console.log(edicion);
-    const filtroIdAActualizar = { _id: new ObjectId(ventaAEditar.id) } //hace el filtro sobre el id a buscar y asi encontrar el registro 
+    const filtroIdAActualizar = { _id: new ObjectId(id) } //hace el filtro sobre el id a buscar y asi encontrar el registro 
     // para aplicarle las modificaciones, este es el primer parametro que necesita el metodo .findOneAndUpdate( ) son tres 
     // los parametros que necesita para buscar el registro luego poder modificarlo 
-    delete ventaAEditar.id; // debo eliminar el id del cuerpo de los datos del json porque si no me crea y duplica este
+    // delete ventaAEditar.id; // debo eliminar el id del cuerpo de los datos del json porque si no me crea y duplica este
     // id en el registro que estoy modificando y me lo crea en la ultima linen del registro esto se hace cuando estoy 
     // editando por medio de obtener el id del regristro si fuera edicion por rutas URL no necesito esto 
     const operacionAtomica = { // instruccion atomic operators, me configura a la base de datos para editar 
@@ -106,15 +106,15 @@ const editarVenta = async (ventaAEditar, callback) => {
 
 }
 
-const eliminarVenta = async (ventaAEliminar, callback) => {
+const eliminarVenta = async (id, callback) => {
     // const cuerpoRegistroAEliminar = req.body;//  guardo el cuerpo de la informacion es decir el json donde esta todos los datos 
     // // de los campos del registro de la venta a eliminar 
-    const filtroIdAEliminar = { _id: new ObjectId(ventaAEliminar.id) } //hace el filtro sobre el id a buscar y asi encontrar el registro 
+    const filtroIdAEliminar = { _id: new ObjectId(id) };//hace el filtro sobre el id a buscar y asi encontrar el registro 
     // para poder eliminarlo , este es el primer parametro que necesita el metodo .findOneAndUpdate( ) son tres 
     // los parametros que necesita para buscar el registro luego poder modificarlo 
 
     await getBD().collection('venta').deleteOne(filtroIdAEliminar, callback);
-}
+};
 
 
 export { queryAllVentas, crearVenta, editarVenta, eliminarVenta };
