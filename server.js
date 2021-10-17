@@ -16,6 +16,7 @@ import { conectarBD} from "./db/db.js"; // importo la funcion para la conexion a
 
 import dotenv from "dotenv"; // variables de entorno 
 import rutasVenta from "./views/ventas/rutasventa.js";
+import rutasProducto from "./views/productos/rutasproducto.js";
 
 dotenv.config({path:'./.env'} );// configuracion de la libreria dotenv para poder usar la variables de entorno del archivo .env.. le paso un objeto 
 // al metodo config de dotenv con la ruta del archivo .env
@@ -35,6 +36,8 @@ app.use(Cors()); // asi uso el package cors y permite usarlo
 // aqui le agregamos funcionalidad:  las rutas
 
 app.use(rutasVenta);
+app.use(rutasProducto);
+
 
 // necesitamos antes de prender el servidor con listen .. conectarnos a la base de datos por esto definimos una funcion 
 // main que nos permita hacer esto, este main se ejecutara todo el tiempo y primero se conecta a la base de datos y
