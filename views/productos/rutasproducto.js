@@ -50,14 +50,14 @@ rutasProducto.route('/productos').get((req, res) => {// el primer argumento es l
 
 // ruta para la peticion POST , el verbo post es el que me identifica el metodo de crear nuevo registro no necesito especificarlo en la ruta
 rutasProducto.route('/productos').post((req, res) => {
-
+    console.log("alguien hizo post en la ruta /productos"); 
     crearProducto(req.body, genericCallback(res)); // llamo al controlador de crear venta le paso los datos y tambien el genericCallback(res)
 });
 
 // ruta para la peticion PATCH: pondremos en este metodo patch: una ruta dinamica y se pone con dos puntos y seguido del nombre
 // esto con el proposito de encontrar el registro a modificar por medio de la ruta y no por medio del id del cuerpo de los datos traidos del front 
 rutasProducto.route("/productos/:id").patch((req, res) => { // implementamos la ruta para la peticion de actualizar
-
+    console.log("alguien hizo patch en la ruta /productos"); 
     editarProducto(req.params.id, req.body, genericCallback(res)); //se usa req.params.id cuando lo que queremos es acceder 
     // al id del registro desde la ruta y se usa req.body si vamos a obtener el id por medio del cuerpo del registro enviado
     // es decir los datos en si 
@@ -67,6 +67,7 @@ rutasProducto.route("/productos/:id").patch((req, res) => { // implementamos la 
 // ruta para la peticion DELETE
 rutasProducto.route("/productos/:id").delete((req, res) => {
     // console.log("elimine")
+    console.log("alguien hizo delete en la ruta /productos"); 
     eliminarProducto(req.params.id, genericCallback(res));
 });
 

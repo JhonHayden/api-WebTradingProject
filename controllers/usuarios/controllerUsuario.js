@@ -29,15 +29,14 @@ const crearUsuario = async (datosNuevoUsuario, callback) => { // se pone async p
     // los metodos y utilidades .use para recibir json
 
     
-    if (Object.keys(datosNuevoUsuario).includes('nombre') &&
-        Object.keys(datosNuevoUsuario).includes('apellido') &&
-        Object.keys(datosNuevoUsuario).includes('telefono') &&
-        Object.keys(datosNuevoUsuario).includes('fechaNacimiento')&& 
-        Object.keys(datosNuevoUsuario).includes('email')&&
-        Object.keys(datosNuevoUsuario).includes('contraseña')
+    // if (Object.keys(datosNuevoUsuario).includes('nombre') &&
+    //     Object.keys(datosNuevoUsuario).includes('apellido') &&
+    //     Object.keys(datosNuevoUsuario).includes('telefono') &&
+    //     Object.keys(datosNuevoUsuario).includes('nacimiento:')&& 
+    //     Object.keys(datosNuevoUsuario).includes('correo')
         
 
-    ) {
+    // ) {
 
         // aqui implementaremos el codigo para crear usuario en la base de datos de mongoDB
         await getBD().collection('usuario').insertOne(datosNuevoUsuario, callback);
@@ -57,10 +56,13 @@ const crearUsuario = async (datosNuevoUsuario, callback) => { // se pone async p
         // estado de peticion http de todo bien todo bien  (estados de las peticiones HTTP sirven
         // para tener un buen control de manejo de error )
 
-    } else {
-        return 'error';
-        // res.sendStatus(500);
-    }
+    // } else {
+
+
+    //     console.log(" no cumple")
+    //     return 'error';
+    //     // res.sendStatus(500);
+    // }
 
 
     // res.sendStatus(500);// estado de peticion http de falla
