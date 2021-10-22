@@ -12,6 +12,9 @@ import dotenv from "dotenv"; // variables de entorno
 import rutasVenta from "./views/ventas/rutasventa.js";
 import rutasProducto from "./views/productos/rutasproducto.js";
 import rutasUsuario from "./views/usuarios/rutasusuario.js";
+import jwt from 'express-jwt';
+import jwks from 'jwks-rsa'; 
+
 
 dotenv.config({path:'./.env'} );// configuracion de la libreria dotenv para poder usar la variables de entorno del archivo .env.. le paso un objeto 
 // al metodo config de dotenv con la ruta del archivo .env
@@ -25,6 +28,29 @@ app.use(Express.json()) // cuando llega una solicitud primero se ejecuta esta fu
 //  convierte el cuerpo body de esa peticion o request del front en  un objeto que se puede usar en nuestro backend
 app.use(Cors()); // asi uso el package cors y permite usarlo 
 // aqui le agregamos funcionalidad:  las rutas
+
+
+
+
+//funcionalidad de autenticacion con token jwt me protege las rutas ( middleware jwtCkeck  )
+var jwtCheck = jwt({
+    secret: jwks.expressJwtSecret({
+        cache: true,
+        rateLimit: true,
+        jwksRequestsPerMinute: 5,
+        jwksUri: 'https://auth0-web-trading-project.us.auth0.com/.well-known/jwks.json'// end point ruta desde Auth0 donde 
+        // se verifica si el token es valido o no  
+  }),
+  audience: 'api/autenticacion/web/trading/project',// identificacion y nombre de la api de Auth0 esta se la entregamos al 
+//   front igual 
+  issuer: 'https://auth0-web-trading-project.us.auth0.com/',
+  algorithms: ['RS256']
+});
+
+
+app.use(jwtCheck); // me permite usar e implementar el middleware jwtCkeck  
+
+
 app.use(rutasVenta);
 app.use(rutasProducto);
 app.use(rutasUsuario);
