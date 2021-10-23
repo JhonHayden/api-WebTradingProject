@@ -14,6 +14,7 @@ import rutasProducto from "./views/productos/rutasproducto.js";
 import rutasUsuario from "./views/usuarios/rutasusuario.js";
 import jwt from 'express-jwt';
 import jwks from 'jwks-rsa'; 
+import nodemon from "nodemon";
 
 
 dotenv.config({path:'./.env'} );// configuracion de la libreria dotenv para poder usar la variables de entorno del archivo .env.. le paso un objeto 
@@ -48,7 +49,11 @@ var jwtCheck = jwt({
 });
 
 
-app.use(jwtCheck); // me permite usar e implementar el middleware jwtCkeck  
+app.use(jwtCheck); // me permite usar e implementar el middleware jwtCkeck  se encarga de cominicarce con auth 
+// le envia el token que recibio del front por medio de axios como request y Auth recibe este token lo compara con el qu e
+// envio al front en un principio cuando el front se lo pidio y si son iguales lo valida y le dice al backend el token 
+// es valido puede continuar con la solicitud es seguro todo lo esto lo hace este middleware jwtCkeck y con app.use le digo 
+// a nodemon.js use este middlewarey ejecutelo , mejor dicho checkea si el token jwt es valido o no 
 
 
 app.use(rutasVenta);
