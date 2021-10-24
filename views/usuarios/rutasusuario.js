@@ -1,5 +1,5 @@
 import Express from "express";
-import { consultaAllUsuarios, crearUsuario, editarUsuario, eliminarUsuario } from "../../controllers/usuarios/controllerUsuario.js";
+import { consultaAllUsuarios, consultarOCrearUsuarioRecienInicioSesion, crearUsuario, editarUsuario, eliminarUsuario } from "../../controllers/usuarios/controllerUsuario.js";
 
 const rutasUsuario = Express.Router();// metodo Router me permite definir rutas, funcion de Expresss, me permite generar rutas
 // sin tener que depender de esta forma const app = Express() y app.get('/usuarios', (req, res) => {} .. lo asignamos a una 
@@ -43,6 +43,27 @@ rutasUsuario.route('/usuarios').post((req, res) => {
     crearUsuario(req.body, genericCallback(res)); // llamo al controlador de crear venta le paso los datos y tambien el genericCallback(res)
 });
 
+// ruta para pedir el usuario recien inicia sesion y verificar si esta en la base de datos si esta lo devuelve si no 
+// esta lo crea e igual lo devuelve al frontend super importante esta ruta debe estar antes del las rutas del id dinamico las 
+// siguientes porque si no entrara en esas antes que esta usuarios/self
+
+rutasUsuario.route('/usuarios/self').get((req, res) => {// el primer argumento es la ruta y el segundo argumento es una funcion que se ejecutq
+    // cuando entran en esta ruta (callback), es decir cuando hacen una peticion de tipo get a esta ruta la funcion 
+    // se ejecuta.0 absolutamente todas las navegaciones que se hacen en una URL son de tipo get siempre se pide traer 
+    // informacion .. la funcion anonima tambien tiene paramentros y dos muy importantes son el 
+    // req: es el request quien hace la solicitud o peticion estos nombres son por convencion 
+    // res: es la respuesta del servidor a esta peticion, es la respuesta
+    // para el cliente, el navegador el frontend estos nombres son por convencion 
+    console.log("alguien hizo GET en la ruta  /usuarios/self   usuario que recien inicio sesion ");   //se imprime en la terminal cuando alguien visita la ruta
+
+    consultarOCrearUsuarioRecienInicioSesion(req,genericCallback(res));// se ejecuta este controlador apenas 
+    // hagan una peticion a esta ruta y se le envia como parametro la request completa (req)
+
+
+
+});
+
+
 // ruta para la peticion PATCH: pondremos en este metodo patch: una ruta dinamica y se pone con dos puntos y seguido del nombre
 // esto con el proposito de encontrar el registro a modificar por medio de la ruta y no por medio del id del cuerpo de los datos traidos del front 
 rutasUsuario.route("/usuarios/:id").patch((req, res) => { // implementamos la ruta para la peticion de actualizar
@@ -58,7 +79,7 @@ rutasUsuario.route("/usuarios/:id").patch((req, res) => { // implementamos la ru
 rutasUsuario.route("/usuarios/:id").delete((req, res) => {
     // console.log("elimine")
     console.log("alguien hizo DELETE en la ruta /usuarios");
-    
+
     eliminarUsuario(req.params.id, genericCallback(res));
 });
 

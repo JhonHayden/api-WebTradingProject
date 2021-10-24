@@ -70,6 +70,7 @@ rutasVenta.route('/ventas').get((req, res) => {// el primer argumento es la ruta
 // ruta para la peticion POST , el verbo post es el que me identifica el metodo de crear nuevo registro no necesito especificarlo en la ruta
 rutasVenta.route('/ventas').post((req, res) => {
 console.log(req.body);
+console.log("peticion POST de VENTA ",req.body)
     crearVenta(req.body, genericCallback(res)); // llamo al controlador de crear venta le paso los datos y tambien el genericCallback(res)
 });
 

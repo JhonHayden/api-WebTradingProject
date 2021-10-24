@@ -29,20 +29,14 @@ const crearVenta = async (datosNuevaVenta, callback) => { // se pone async para 
     // los metodos y utilidades .use para recibir json
 
 
-    if (Object.keys(datosNuevaVenta).includes('codigoVenta') &&
-        Object.keys(datosNuevaVenta).includes('fecha') &&
-        Object.keys(datosNuevaVenta).includes('codigoProducto') &&
-        Object.keys(datosNuevaVenta).includes('cantidadProducto') &&
-        Object.keys(datosNuevaVenta).includes('nombreVendedor') &&
-        Object.keys(datosNuevaVenta).includes('nombreCliente') &&
-        Object.keys(datosNuevaVenta).includes('precioUnitario') &&
-        Object.keys(datosNuevaVenta).includes('valorTotal')
+    if (
+        Object.keys(datosNuevaVenta).includes('fecha')
 
     ) {
 
         // aqui implementaremos el codigo para crear venta en la base de datos de mongoDB
         await getBD().collection('venta').insertOne(datosNuevaVenta, callback);
-
+        console.log("si agregue")
         // usamos funciones de mongo para escribir y guardar en una
         // colecion documento creado con getBD().collection("venta"), venta es mi colecion y en ella guardo los datos traidos del front, el 
         // registro de una venta con el metodo inserOne, el segundo parametro de es una funcion que se ejecuta cuando la insercion es decir

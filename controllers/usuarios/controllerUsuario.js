@@ -1,7 +1,7 @@
 // condigo del controlador del modulo usuarios
 import { getBD } from "../../db/db.js"; // importo la funcion para la conexion a la base de datos mongoDB
 import { ObjectId } from "mongodb"; // importamos la funcion de ObjectId para obtener el id de un registro y poder hacer el metodo PATCH 
-
+import jwt_decode from "jwt-decode"; // libreria para decodificar token y extraer informacion 
 const consultaAllUsuarios = async (callback) => {// 
 
     await getBD().collection('usuario').find({}).limit(50).toArray(callback); //funcion de la libreria mongodb del driver para la getBD() (mongoclient) para encontrar
@@ -28,33 +28,33 @@ const crearUsuario = async (datosNuevoUsuario, callback) => { // se pone async p
     // express esta diseñado para trabajar con formato json pero se debe usar primero 
     // los metodos y utilidades .use para recibir json
 
-    
+
     // if (Object.keys(datosNuevoUsuario).includes('nombre') &&
     //     Object.keys(datosNuevoUsuario).includes('apellido') &&
     //     Object.keys(datosNuevoUsuario).includes('telefono') &&
     //     Object.keys(datosNuevoUsuario).includes('nacimiento:')&& 
     //     Object.keys(datosNuevoUsuario).includes('correo')
-        
+
 
     // ) {
 
-        // aqui implementaremos el codigo para crear usuario en la base de datos de mongoDB
-        await getBD().collection('usuario').insertOne(datosNuevoUsuario, callback);
+    // aqui implementaremos el codigo para crear usuario en la base de datos de mongoDB
+    await getBD().collection('usuario').insertOne(datosNuevoUsuario, callback);
 
-        // usamos funciones de mongo para escribir y guardar en una
-        // colecion documento creado con getBD().collection("usuario"), usuario es mi colecion y en ella guardo los datos traidos del front, el 
-        // registro de una usuario con el metodo inserOne, el segundo parametro de es una funcion que se ejecuta cuando la insercion es decir
-        // el proceso de guardar el registro en la base de datos termine esta funcion tiene dos parametros uno es un error y esto es para mostrar
-        // un mensaje de error si la operacion inserOne no fue satisfactoria y resul me trae el resultado creo 
-        // este es mi documento en la base de datos dentro de mi collecion
-        //  (documentosenBaseDatos)--> getBD() = db.db('documentosenBaseDatos') donde guardare mis datos de las
-        // usuarios es decir representa el modelo o entidad usuarios, y le insertare los datos a ese documento con 
-        // el metodo insertOne, el primer parametro es mi registro de una usuario y el  segundo parametro es una funcion que tiene 
-        // dos parametros err= error si sucede un error , y result = aun nose que es pero es el resultado de esta operacion insert 
+    // usamos funciones de mongo para escribir y guardar en una
+    // colecion documento creado con getBD().collection("usuario"), usuario es mi colecion y en ella guardo los datos traidos del front, el 
+    // registro de una usuario con el metodo inserOne, el segundo parametro de es una funcion que se ejecuta cuando la insercion es decir
+    // el proceso de guardar el registro en la base de datos termine esta funcion tiene dos parametros uno es un error y esto es para mostrar
+    // un mensaje de error si la operacion inserOne no fue satisfactoria y resul me trae el resultado creo 
+    // este es mi documento en la base de datos dentro de mi collecion
+    //  (documentosenBaseDatos)--> getBD() = db.db('documentosenBaseDatos') donde guardare mis datos de las
+    // usuarios es decir representa el modelo o entidad usuarios, y le insertare los datos a ese documento con 
+    // el metodo insertOne, el primer parametro es mi registro de una usuario y el  segundo parametro es una funcion que tiene 
+    // dos parametros err= error si sucede un error , y result = aun nose que es pero es el resultado de esta operacion insert 
 
-        // res.sendStatus(200);//esta linea me presenta error si la meto (Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client)  
-        // estado de peticion http de todo bien todo bien  (estados de las peticiones HTTP sirven
-        // para tener un buen control de manejo de error )
+    // res.sendStatus(200);//esta linea me presenta error si la meto (Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client)  
+    // estado de peticion http de todo bien todo bien  (estados de las peticiones HTTP sirven
+    // para tener un buen control de manejo de error )
 
     // } else {
 
@@ -79,6 +79,65 @@ const crearUsuario = async (datosNuevoUsuario, callback) => { // se pone async p
     // postman e  insomnia me ayudaran a probar estas peticiones que no son get
 
 };
+
+const consultarOCrearUsuarioRecienInicioSesion = async (req, callback) => {
+    // 1. obtener los datos del usuario desde el token 
+    // necesitamos obtener el header desde el req dado que el token esta en los header del req (request)
+    // en el req esta el token 
+    // extraer el token del req
+    const token = req.headers.authorization.split('Bearer ')[1];// tiene el token y con split le quito la palabra 
+    // Bearer y el espacio que tiene el token para solo tener el token nada mas 
+    // ahora debemos desecriptar el token para extraer la informacion del usuario y para esto hay una libreria jwt-decode
+    // esta libreria decodifica el token 
+    console.log("token =", jwt_decode(token));// me imprime en consola el token decodificado 
+
+    // guardamos ese token decodificado con solo la informacion que queremos guardar en la BD
+    const infoUser = jwt_decode(token)['http://localhost/userData'];// me extrae el valor de la clave  'http://localhost/userData'
+    // del objeto token esta tiene la informacion del usuario que necesitamos guardar en la bd
+
+    console.log('infoUser =', infoUser);   // imprime en consola la informacion del usuario      
+
+
+    // 2. con el correo o con el id de Auth, verificar si el usuario ya esta en la bases de datos o no 
+    const baseDeDatos = getBD();
+
+    await baseDeDatos.collection('usuario').findOne({ email: infoUser.email }, async (err, response) => { // me permite 
+        // consultar en la base de datos en la coleccion de usuario el email de infoUser el cual es el token 
+        // pero solo buscaremos por la key email  en todos los datos ya guardados  en la base de datos es decir compara 
+        // el value de la key email de todos los datos en la BD con el value de la key email de infoUser
+        console.log("respuesta a la consulta del usuario recien inicio sesion = ", response);
+
+        if (response) {
+            // 3. si el usuario ya esta en la base de datos entonces devuelve la informacion del usuario 
+
+            callback(err, response);// me permite enviar al front el response el cual es la data del usuario 
+            // que acaba de iniciar sesion pero ya estaba guardado en la base de datos 
+
+        } else {
+            // 4. si el usuario no esta en la base de datos, lo crea y devuelve la informacion del usuario
+
+
+            infoUser.auth0ID = infoUser._id; // dado que auth entrega tambien un _id es mejor guardarlo en otra 
+            // variable y elimarlo de como estaba ante ya que mongo genera un _id entonces esto evita conflictos y permite 
+            // que mongo sea el que genere el _id y auth genera ese _id pero ahora sera guardado como auth0ID
+            delete infoUser._id; // con esta instruccion elimino el _id del token que envio auth0
+
+            infoUser.estado='Pendiente'  // asi agrego el campo estado y rol en un primer valor por defecto 
+            infoUser.rol='Pendiente'
+           
+            await crearUsuario(infoUser, (err, respuesta) => callback(err, infoUser))// me crea el usuario y me envia
+            // la informacion de infoUser al frontend por medio de callback 
+            //estos callback siempre entregan dos 
+            // argumentos uno es el error(err) y el otro es la respuesta 
+
+            // console.log("respuesta a la creacion del usuario recien inicio sesion = ", respuesta);
+
+
+        }
+    })
+
+};
+
 
 const editarUsuario = async (id, usuarioAEditar, callback) => { // 
 
@@ -118,4 +177,12 @@ const eliminarUsuario = async (id, callback) => {
 };
 
 
-export { consultaAllUsuarios, crearUsuario, editarUsuario, eliminarUsuario };
+export {
+    consultaAllUsuarios,
+    crearUsuario,
+    editarUsuario,
+    eliminarUsuario,
+    consultarOCrearUsuarioRecienInicioSesion
+};
+
+// http://localhost:5000/usuarios/self
