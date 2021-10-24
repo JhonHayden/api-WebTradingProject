@@ -122,8 +122,8 @@ const consultarOCrearUsuarioRecienInicioSesion = async (req, callback) => {
             // que mongo sea el que genere el _id y auth genera ese _id pero ahora sera guardado como auth0ID
             delete infoUser._id; // con esta instruccion elimino el _id del token que envio auth0
 
-            infoUser.estado='pendiente'  // asi agrego el campo estado y rol en un primer valor por defecto 
-            infoUser.rol='pendiente'
+            infoUser.estado='Pendiente'  // asi agrego el campo estado y rol en un primer valor por defecto 
+            infoUser.rol='Pendiente'
            
             await crearUsuario(infoUser, (err, respuesta) => callback(err, infoUser))// me crea el usuario y me envia
             // la informacion de infoUser al frontend por medio de callback 
