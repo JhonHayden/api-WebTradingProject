@@ -2,7 +2,6 @@
 import { getBD } from "../../db/db.js"; // importo la funcion para la conexion a la base de datos mongoDB
 import { ObjectId } from "mongodb"; // importamos la funcion de ObjectId para obtener el id de un registro y poder hacer el metodo PATCH 
 import jwt_decode from "jwt-decode"; // libreria para decodificar token y extraer informacion 
-import { response } from "express";
 const consultaAllUsuarios = async (callback) => {// 
 
     await getBD().collection('usuario').find({}).limit(50).toArray(callback); //funcion de la libreria mongodb del driver para la getBD() (mongoclient) para encontrar
