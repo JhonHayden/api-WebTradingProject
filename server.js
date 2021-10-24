@@ -20,6 +20,8 @@ import autorizacionEstadoUsuario from "./middleware/autorizacionEstadoUsuario.js
 dotenv.config({path:'./.env'} );// configuracion de la libreria dotenv para poder usar la variables de entorno del archivo .env.. le paso un objeto 
 // al metodo config de dotenv con la ruta del archivo .env
 
+const port = process.env.PORT || 5000 ; // buena practica tener el puerto asi, si no encuentra la variable de entorno entonces le pone 5000
+
 
 // declaramos una variable que sera nuestra aplicacion nuestro servidor... app este nombre es por convencion 
 // esta variable le agregamos todo lo que se necesite las rutas los metodos 
@@ -68,14 +70,14 @@ app.use(rutasUsuario);
 const main = () => { // esta funcion se ejecutara primero y me permite hacer la conexion primero a la base de datos
     // y ya luego si prender el servidor al retornar el metodo listen
     // aqui hacemos la conexion a la base de datos 
-    return app.listen(process.env.PORT, () => {//por dentro de este metodo listen tiene un while true para estar ejecutandoce siempre 
+    return app.listen(port, () => {//por dentro de este metodo listen tiene un while true para estar ejecutandoce siempre 
         //  me permite prender y correr el servidor se queda todo el tiempo en ejecucion y escuchando solicitudes 
         // en el puerto especifico en este servidor donde estara desplegado el puerto se pone como argumento 
         // en los parentesis del metodo listen() por convencion es el puerto 5000 o 5050 la idea es que sea unico 
         // el segundo argumento es una funcion que se ejecuta cuando la app comienza a funcionar cuando se inicia 
         // a escuchar el puerto 
 
-        console.log( `escuchando puerto ${process.env.PORT}`) // uso de variable de entorno con process.env.POR 
+        console.log( `escuchando puerto ${port}`) // uso de variable de entorno con process.env.POR 
     });
 };
 conectarBD(main);//llamamos la funcion de conectar a la base de datos y le pasamos como parametro la funcion main 
