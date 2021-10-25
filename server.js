@@ -16,12 +16,10 @@ import jwt from 'express-jwt';
 import jwks from 'jwks-rsa'; 
 import autorizacionEstadoUsuario from "./middleware/autorizacionEstadoUsuario.js";
 
-
 dotenv.config({path:'./.env'} );// configuracion de la libreria dotenv para poder usar la variables de entorno del archivo .env.. le paso un objeto 
 // al metodo config de dotenv con la ruta del archivo .env
 
 const port = process.env.PORT || 5000 ; // buena practica tener el puerto asi, si no encuentra la variable de entorno entonces le pone 5000
-
 
 // declaramos una variable que sera nuestra aplicacion nuestro servidor... app este nombre es por convencion 
 // esta variable le agregamos todo lo que se necesite las rutas los metodos 
@@ -31,9 +29,6 @@ app.use(Express.json()) // cuando llega una solicitud primero se ejecuta esta fu
 //  convierte el cuerpo body de esa peticion o request del front en  un objeto que se puede usar en nuestro backend
 app.use(Cors()); // asi uso el package cors y permite usarlo 
 // aqui le agregamos funcionalidad:  las rutas
-
-
-
 
 //funcionalidad de autenticacion con token jwt me protege las rutas ( middleware jwtCkeck  )
 var jwtCheck = jwt({
@@ -50,7 +45,6 @@ var jwtCheck = jwt({
   algorithms: ['RS256']
 });
 
-
 app.use(jwtCheck); // me permite usar e implementar el middleware jwtCkeck  se encarga de cominicarce con auth 
 // le envia el token que recibio del front por medio de axios como request y Auth recibe este token lo compara con el qu e
 // envio al front en un principio cuando el front se lo pidio y si son iguales lo valida y le dice al backend el token 
@@ -58,7 +52,6 @@ app.use(jwtCheck); // me permite usar e implementar el middleware jwtCkeck  se e
 // a nodemon.js use este middlewarey ejecutelo , mejor dicho checkea si el token jwt es valido o no 
 
 app.use(autorizacionEstadoUsuario);
-
 
 app.use(rutasVenta);
 app.use(rutasProducto);

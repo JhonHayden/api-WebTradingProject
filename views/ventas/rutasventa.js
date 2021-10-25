@@ -1,7 +1,6 @@
 import Express from "express";
 import { queryAllVentas, crearVenta, editarVenta, eliminarVenta } from "../../controllers/ventas/controllerVenta.js";
 
-
 const rutasVenta = Express.Router();// metodo Router me permite definir rutas, funcion de Expresss, me permite generar rutas
 // sin tener que depender de esta forma const app = Express() y app.get('/ventas', (req, res) => {} .. lo asignamos a una 
 // variable y esta la exportamos
@@ -41,7 +40,6 @@ const genericCallback = (res) => (err, result) => {
     // console.log(result);
 }
 
-
 // ruta para la peticion GET
 rutasVenta.route('/ventas').get((req, res) => {// el primer argumento es la ruta y el segundo argumento es una funcion que se ejecutq
     // cuando entran en esta ruta (colvar), es decir cuando hacen una peticion de tipo get a esta ruta la funcion 
@@ -66,14 +64,12 @@ rutasVenta.route('/ventas').get((req, res) => {// el primer argumento es la ruta
 
 });
 
-
 // ruta para la peticion POST , el verbo post es el que me identifica el metodo de crear nuevo registro no necesito especificarlo en la ruta
 rutasVenta.route('/ventas').post((req, res) => {
 console.log(req.body);
 console.log("peticion POST de VENTA ",req.body)
     crearVenta(req.body, genericCallback(res)); // llamo al controlador de crear venta le paso los datos y tambien el genericCallback(res)
 });
-
 // ruta para la peticion PATCH: pondremos en este metodo patch: una ruta dinamica y se pone con dos puntos y seguido del nombre
 // esto con el proposito de encontrar el registro a modificar por medio de la ruta y no por medio del id del cuerpo de los datos traidos del front 
 rutasVenta.route("/ventas/:id").patch((req, res) => { // implementamos la ruta para la peticion de actualizar
@@ -83,11 +79,9 @@ rutasVenta.route("/ventas/:id").patch((req, res) => { // implementamos la ruta p
     // es decir los datos en si 
 
 });
-
 // ruta para la peticion DELETE
 rutasVenta.route("/ventas/:id").delete((req, res) => {
     // console.log("elimine")
     eliminarVenta(req.params.id, genericCallback(res));
 });
-
 export default rutasVenta;// lo exportamos para usarlo en mi server.js con los metodo app.use(rutasVenta)
